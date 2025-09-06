@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Shopping List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 24px;
+        }
+        .budget {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .budget-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .add-section {
+            margin-bottom: 20px;
+        }
+        .add-input {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .add-btn {
+            width: 25%;
+            padding: 10px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .add-btn:hover {
+            background: #1976d2;
+        }
+        .categories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .category-btn {
+            padding: 15px 10px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+        }
+        .category-btn:hover {
+            background: #e0e0e0;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #fafafa;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .item.completed {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+            opacity: 0.7;
+        }
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        .item-name {
+            flex: 1;
+            font-size: 16px;
+        }
+        .item.completed .item-name {
+            text-decoration: line-through;
+        }
+        .item-price {
+            font-weight: bold;
+            color: #2196f3;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .total {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .over-budget {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+        .close {
+            float: right;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .price-slider {
+            width: 100%;
+            margin: 20px 0;
+        }
+        .price-display {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196f3;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Smart Shopping List</h1>
+        </div>
+
+        <div class="budget">
+            <input type="number" id="budgetInput" class="budget-input" placeholder="Set your budget ($)" value="150">
+            <div id="budgetDisplay" class="total">Budget: $150.00 | Spent: $0.00</div>
+        </div>
+
+        <div class="add-section">
+            <input type="text" id="itemInput" class="add-input" placeholder="Add item...">
+            <button class="add-btn" onclick="addItem()">Add</button>
+        </div>
+
+        <div class="categories">
+            <button class="category-btn" onclick="showCategory('fruits')">🥕 Fruits & Veggies</button>
+            <button class="category-btn" onclick="showCategory('meat')">🥩 Meat & Fish</button>
+            <button class="category-btn" onclick="showCategory('dairy')">🥛 Dairy & Eggs</button>
+            <button class="category-btn" onclick="showCategory('cleaning')">🧽 Cleaning</button>
+        </div>
+
+        <div id="itemsList">
+            <!-- Sample items -->
+            <div class="item">
+                <input type="checkbox" class="checkbox" onchange="toggleItem(this)">
+                <span class="item-name">Milk</span>
+                <span class="item-price" onclick="setPrice(this)">$3.99</span>
+                <button class="delete-btn" onclick="deleteItem(this)">×</button>
+            </div>
+            <div class="item completed">
+                <input type="checkbox" class="checkbox" checked onchange="toggleItem(this)">
+                <span class="item-name">Apples</span>
+                <span class="item-price" onclick="setPrice(this)">$4.99</span>
+                <button class="delete-btn" onclick="deleteItem(this)">×</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Modal -->
+    <div id="priceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Set Price</h3>
+            <div class="price-display" id="priceDisplay">$3.99</div>
+            <input type="range" class="price-slider" id="priceSlider" min="0.5" max="50" step="0.25" value="3.99" oninput="updatePrice()">
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button onclick="closeModal()" style="padding: 10px 20px;">Cancel</button>
+                <button onclick="confirmPrice()" style="padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPriceElement = null;
+        let totalSpent = 8.98; // Sample total
+        let budget = 150;
+
+        const categories = {
+            fruits: ['apples', 'bananas', 'carrots', 'tomatoes', 'lettuce', 'onions'],
+            meat: ['chicken', 'beef', 'salmon', 'turkey', 'bacon'],
+            dairy: ['milk', 'cheese', 'yogurt', 'butter', 'eggs'],
+            cleaning: ['soap', 'detergent', 'paper towels', 'toilet paper']
+        };
+
+        function addItem() {
+            const input = document.getElementById('itemInput');
+            const itemName = input.value.trim();
+            if (!itemName) return;
+
+            const itemsContainer = document.getElementById('itemsList');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item';
+            itemDiv.innerHTML = `
+                <input type="checkbox" class="checkbox" onchange="toggleItem(this)">
+                <span class="item-name">${itemName}</span>
+                <span class="item-price" onclick="setPrice(this)">$0.00</span>
+                <button class="delete-btn" onclick="deleteItem(this)">×</button>
+            `;
+            itemsContainer.appendChild(itemDiv);
+            input.value = '';
+            updateTotal();
+        }
+
+        function showCategory(category) {
+            const items = categories[category];
+            const randomItems = items.slice(0, 3);
+            const itemsToAdd = randomItems.join(', ');
+            alert(`Popular ${category} items: ${itemsToAdd}\n\nTap OK then type one to add it!`);
+        }
+
+        function toggleItem(checkbox) {
+            const item = checkbox.parentElement;
+            if (checkbox.checked) {
+                item.classList.add('completed');
+            } else {
+                item.class
